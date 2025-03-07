@@ -1,23 +1,33 @@
 {
-  description = "python template";
+  description = "basic python template";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    systems.url = "github:nix-systems/default";
   };
 
-  outputs = { self, flake-utils, nixpkgs, ... }: 
-    flake-utils.lib.eachDefaultSystem (
-      system: let
-        pkgs = import nixpkgs {inherit system;};
-      in {
-        devShell = pkgs.mkShell {
+  outputs = { self, nixpkgs, systems, ... } @ inputs:
+    let
+      inherit (nixpkgs) lib;
+      eachSystem = lib.genAttrs (import systems);
+      pkgsFor = eachSystem (system:
+        import nixpkgs {
+          system = system;
+        }
+      );
+    in
+    {
+      devShells = eachSystem (system: with pkgsFor.${system}; {
+        default = mkShell {
           packages = [ 
-            pkgs.go
-            pkgs.air
-            pkgs.fish 
+            fish 
+            python3
+            ( python3Packages.manim )
+            # python3.withPackages (ps: with ps; [
+            #   manimgl
+            # ])
           ];
         };
-      }
-    );
+      });
+    };
 }
