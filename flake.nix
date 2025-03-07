@@ -19,6 +19,10 @@
         path = ./nodejs;
         description = "nodejs template";
       };
+      zig = {
+        path = ./zig;
+        description = "zig template";
+      };
     };
   };
 }
